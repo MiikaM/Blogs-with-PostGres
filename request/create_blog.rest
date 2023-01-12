@@ -1,0 +1,10 @@
+POST http://localhost:3003/api/blogs
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJvb3QiLCJpZCI6IjVlZGUxNTg5OTAwODBiYTFmOGE1YjYyZCIsImlhdCI6MTU5MTY5NTQ1NX0.XgQh4Z91n-ll5BXg6K-4_If9PFcpd4FS7gjWYgErGqA
+
+{
+	"likes": 2,
+	"title": "Login post test2 with postman",
+	"author": "Miika Mikkonen",
+	"url": "www.test.miikam.com"
+}
