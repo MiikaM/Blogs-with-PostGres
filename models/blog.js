@@ -2,7 +2,7 @@
 require('dotenv').config()
 const { Sequelize, Model, DataTypes } = require('sequelize')
 
-const sequelize = new Sequelize(process.env.DATABASE_UR)
+const sequelize = new Sequelize(process.env.DATABASE_URL)
 
 // const blogSchema = mongoose.Schema({
 //   title: {
@@ -66,7 +66,9 @@ Blog.init(
     sequelize,
     underscored: true,
     timestamps: false,
-    modelName: 'note'
+    modelName: 'blog'
   })
+
+Blog.sync();
 
 module.exports = Blog

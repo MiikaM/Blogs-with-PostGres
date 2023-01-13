@@ -1,27 +1,27 @@
-const config = require('./utils/config')
+// const config = require('./utils/config')
 const express = require('express')
 require('express-async-errors')
 const app = express()
 const cors = require('cors')
 const usersRouter = require('./controllers/users')
 const blogsRouter = require('./controllers/blogs')
-const logger = require('./utils/logger')
+// const logger = require('./utils/logger')
 const middleware = require('./utils/middleware')
-const mongoose = require('mongoose')
+// const mongoose = require('mongoose')
 const loginRouter = require('./controllers/login')
 
 
-const mongoUrl = config.MONGODB_URI
-mongoose.set('runValidators', true)
-logger.info('Connecting to ', mongoUrl)
+// const mongoUrl = config.MONGODB_URI
+// mongoose.set('runValidators', true)
+// logger.info('Connecting to ', mongoUrl)
 
-mongoose.connect(mongoUrl, { useCreateIndex: true, useFindAndModify: false, useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => {
-    logger.info('Connected to MongoDB')
-  })
-  .catch(error => {
-    logger.error('Error occured connecting to MongoDB', error.message)
-  })
+// mongoose.connect(mongoUrl, { useCreateIndex: true, useFindAndModify: false, useNewUrlParser: true, useUnifiedTopology: true })
+//   .then(() => {
+//     logger.info('Connected to MongoDB')
+//   })
+//   .catch(error => {
+//     logger.error('Error occured connecting to MongoDB', error.message)
+//   })
 
 app.use(cors())
 app.use(express.json())
