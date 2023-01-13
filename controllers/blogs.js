@@ -3,15 +3,32 @@ const blogsRouter = express.Router()
 const { Blog, User } = require('../models');
 const { blogFinder } = require('../utils/middleware');
 const { SECRET } = require('../utils/config')
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const { Op } = require('sequelize');
 
 
 blogsRouter.get('/', async (request, response) => {
+
   const blogs = await Blog.findAll({
-    attributes: {exclude: ['userId']},
+    attributes: { exclude: ['userId'] },
     include: {
       model: User,
       attributes: ['name']
+    },
+    order: [
+      ['likes', 'DESC']
+    ],
+    where: {
+      [Op.or]: [{
+        title: {
+          [Op.substring]: request.query.search ? request.query.search : ""  
+        }
+      },
+      {
+        author: {
+          [Op.substring]: request.query.search ? request.query.search : ""
+        }
+      }]
     }
   });
   response.json(blogs)
