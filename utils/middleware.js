@@ -1,5 +1,5 @@
 const morgan = require('morgan')
-const { Blog } = require('../models')
+const { Blog, User } = require('../models')
 const logger = require('./logger')
 
 morgan.token('contents', function (req) {
@@ -52,10 +52,25 @@ async function blogFinder(request, response, next) {
   next()
 }
 
+async function userFinder(request, response, next) {
+
+  try {
+    request.user = await User.findOne({where: {
+      username: request.params.id
+    }})
+    if (!request.user) return response.sendStatus(404)
+  } catch (error) {
+    next(error)
+  }
+
+  next()
+}
+
 module.exports = {
   morg,
   unknownEndpoint,
   errorHandler,
   tokenExtractor,
-  blogFinder
+  blogFinder,
+  userFinder
 }

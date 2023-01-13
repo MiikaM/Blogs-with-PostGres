@@ -1,27 +1,34 @@
 const express = require('express');
 const blogsRouter = express.Router()
-const { Blog } = require('../models');
+const { Blog, User } = require('../models');
 const { blogFinder } = require('../utils/middleware');
-// const User = require('../models/user')
-// const jwt = require('jsonwebtoken')
+const { SECRET } = require('../utils/config')
+const jwt = require('jsonwebtoken')
 
 
 blogsRouter.get('/', async (request, response) => {
-  const blogs = await Blog.findAll();
-  response.json(blogs.map(blog => blog.toJSON()))
+  const blogs = await Blog.findAll({
+    attributes: {exclude: ['userId']},
+    include: {
+      model: User,
+      attributes: ['name']
+    }
+  });
+  response.json(blogs)
 })
 
 
 blogsRouter.post('/', async (request, response, next) => {
   const body = request.body
 
-  // const decodedToken = jwt.verify(request.token, process.env.SECRET)
-  // if (!request.token || !decodedToken.id) {
-  //   return response.status(401).json({ error: 'token missing or invalid' })
-  // }
-  // const user = await User.findById(decodedToken.id)
+  const decodedToken = jwt.verify(request.token, SECRET)
+  if (!request.token || !decodedToken.id) {
+    return response.status(401).json({ error: 'token missing or invalid' })
+  }
   try {
-    const blog = await Blog.create(body);
+    const user = await User.findByPk(decodedToken.id)
+
+    const blog = await Blog.create({ ...body, likes: 0, userId: user.id });
     response.status(201).json(blog.toJSON())
 
   } catch (error) {
@@ -50,23 +57,20 @@ singleBlogRouter.put('/', async (request, response, next) => {
 })
 
 singleBlogRouter.delete('/', async (request, response) => {
-  // const blog = await Blog.findByPk(request.params.id)
-  // if (!blog) {
-  //   return response.status(400).json({ error: 'Blog has already been removed' })
-  // }
-  // const decodedToken = jwt.verify(request.token, process.env.SECRET)
-  // if (!request.token || !decodedToken.id) {
-  //   return response.status(401).json({ error: 'token missing or invalid' })
-  // }
-
-  // const user = await User.findByPk(decodedToken.id)
-
-  // if (blog.user) {
-  //   if (!(blog.user.toString() === user._id.toString())) {
-  //     return response.status(401).json({ error: 'Wrong user' })
-  //   }
-  // }
   const dbBlog = request.blog;
+
+  const decodedToken = jwt.verify(request.token, SECRET)
+  if (!request.token || !decodedToken.id) {
+    return response.status(401).json({ error: 'token missing or invalid' })
+  }
+
+  const user = await User.findByPk(decodedToken.id);
+
+  if (dbBlog.user) {
+    if (!(dbBlog.userId === user.id)) {
+      return response.status(401).json({ error: 'Wrong user' })
+    }
+  }
 
   await dbBlog.destroy()
   response.status(204).end();

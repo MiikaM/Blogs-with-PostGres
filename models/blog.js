@@ -27,8 +27,6 @@ Blog.init(
     likes: {
       type: DataTypes.INTEGER,
     }
-    // ,
-    // user: {}
   },
   {
     sequelize,
