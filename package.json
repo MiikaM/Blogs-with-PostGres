@@ -8,7 +8,8 @@
     "dev": "cross-env NODE_ENV=development nodemon index.js",
     "lint": "eslint .",
     "test": "cross-env NODE_ENV=test jest --verbose --runInBand",
-    "start:test": "cross-env NODE_ENV=test node index.js"
+    "start:test": "cross-env NODE_ENV=test node index.js",
+    "migration:down": "node utils/rollback.js"
   },
   "author": "Miika Mikkonen",
   "license": "ISC",
@@ -33,7 +34,8 @@
     "pg": "^8.8.0",
     "request": "^2.88.2",
     "sequelize": "^6.28.0",
-    "superagent": "^5.2.2"
+    "superagent": "^5.2.2",
+    "umzug": "^3.2.1"
   },
   "jest": {
     "testEnvironment": "node"

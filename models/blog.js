@@ -31,7 +31,7 @@ Blog.init(
   {
     sequelize,
     underscored: true,
-    timestamps: false,
+    // timestamps: false,
     modelName: 'blog'
   })
 
