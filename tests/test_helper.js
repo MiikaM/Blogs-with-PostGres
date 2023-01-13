@@ -1,5 +1,5 @@
 const supertest = require('supertest')
-const Blog = require('../models/blog')
+const {Blog} = require('../models')
 const User = require('../models/user')
 const app = require('../app')
 

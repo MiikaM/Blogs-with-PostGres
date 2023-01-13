@@ -1,39 +1,7 @@
 // const mongoose = require('mongoose')
 require('dotenv').config()
-const { Sequelize, Model, DataTypes } = require('sequelize')
-
-const sequelize = new Sequelize(process.env.DATABASE_URL)
-
-// const blogSchema = mongoose.Schema({
-//   title: {
-//     type: String,
-//     required: true
-//   },
-//   author: {
-//     type: String,
-//     required: true
-//   },
-//   url: String,
-//   likes: {
-//     type: Number,
-//     default: 0
-//   },
-//   user: {
-//     type: mongoose.Schema.Types.ObjectId,
-//     ref: 'User'
-//   }
-// })
-
-// blogSchema.set('toJSON', {
-//   transform: (document, returnedObject) => {
-//     returnedObject.id = returnedObject._id.toString()
-//     delete returnedObject._id
-//     delete returnedObject.__v
-//   }
-// })
-
-// const Blog = mongoose.model('Blog', blogSchema)
-
+const { Model, DataTypes } = require('sequelize');
+const { sequelize } = require('../utils/db');
 
 
 class Blog extends Model { }
@@ -68,7 +36,5 @@ Blog.init(
     timestamps: false,
     modelName: 'blog'
   })
-
-Blog.sync();
 
 module.exports = Blog

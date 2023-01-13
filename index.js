@@ -1,10 +1,17 @@
 const app = require('./app') // varsinainen Express-sovellus
 const http = require('http')
-const config = require('./utils/config')
+const {PORT} = require('./utils/config')
 const logger = require('./utils/logger')
+const { connectToDatabase } = require('./utils/db')
 
-const server = http.createServer(app)
+const server = http.createServer(app);
 
-server.listen(config.PORT, () => {
-  logger.info(`Server running on port ${config.PORT}`)
-})
+
+async function start() {
+  await connectToDatabase();
+  server.listen(PORT, () => {
+    logger.info(`Server running on port ${PORT}`);
+  })
+}
+
+start();

@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt')
 const supertest = require('supertest')
 const helper = require('./test_helper')
 const app = require('../app')
-const Blog = require('../models/blog')
+const {Blog} = require('../models')
 const User = require('../models/user')
 
 const api = supertest(app)
