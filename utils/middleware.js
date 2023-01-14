@@ -1,5 +1,5 @@
 const morgan = require('morgan')
-const { Blog, User } = require('../models')
+const { Blog, User, UserReadings } = require('../models')
 const logger = require('./logger')
 
 morgan.token('contents', function (req) {
@@ -55,9 +55,28 @@ async function blogFinder(request, response, next) {
 async function userFinder(request, response, next) {
 
   try {
-    request.user = await User.findOne({where: {
-      username: request.params.id
-    }})
+    const where = {  };
+
+    if (request.query.read) {
+      where.read = (request.query.read === 'true') ? true : false
+    }
+
+    request.user = await User.findOne({
+      where: {
+        username: request.params.id,
+      },
+      include: [{
+        model: Blog,
+        as: 'readings',
+        through: {
+          attributes: ['read', 'id'],
+          where
+        },
+        // where: {
+        //   userReadings: { read: true }
+        // }
+      }]
+    })
     if (!request.user) return response.sendStatus(404)
   } catch (error) {
     next(error)
@@ -66,11 +85,25 @@ async function userFinder(request, response, next) {
   next()
 }
 
+async function readingListFinder(request, response, next) {
+
+  try {
+    request.readingList = await UserReadings.findByPk(request.params.id);
+    if (!request.readingList) return response.sendStatus(404)
+  } catch (error) {
+    next(error)
+  }
+
+  next()
+}
+
+
 module.exports = {
   morg,
   unknownEndpoint,
   errorHandler,
   tokenExtractor,
   blogFinder,
-  userFinder
+  userFinder,
+  readingListFinder
 }
