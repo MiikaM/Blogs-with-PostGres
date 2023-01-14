@@ -1,11 +1,8 @@
 const express = require('express');
 const bcrypt = require('bcrypt')
 const usersRouter = express.Router()
-const { User, Blog } = require('../models');
-const { userFinder } = require('../utils/middleware');
-const jwt = require('jsonwebtoken');
-const { SECRET } = require('../utils/config');
-
+const { User, Blog, WebToken } = require('../models');
+const { userFinder, checkToken } = require('../utils/middleware');
 
 usersRouter.get('/', async (request, response) => {
   const users = await User.findAll({
@@ -45,15 +42,12 @@ singleUserRouter.get('/', async (request, response) => {
   response.json(dbUser.toJSON())
 })
 
-singleUserRouter.put('/', async (request, response, next) => {
+singleUserRouter.put('/', checkToken, async (request, response, next) => {
   const body = request.body
   const dbUser = request.user;
-  const decodedToken = jwt.verify(request.token, SECRET)
-  if (!request.token || !decodedToken.id) {
-    return response.status(401).json({ error: 'token missing or invalid' })
-  }
+  const token = request.token;
 
-  if (decodedToken.id !== dbUser.id) {
+  if (token.id !== dbUser.id) {
     return response.status(401).json({ error: 'Only user itself can modify their information' });
 
   }
@@ -66,11 +60,26 @@ singleUserRouter.put('/', async (request, response, next) => {
   }
 })
 
-singleUserRouter.delete('/', async (request, response) => {
+singleUserRouter.delete('/', checkToken, async (request, response) => {
 
   const dbUser = request.user;
+  const token = request.token;
 
-  await dbUser.destroy()
+  await dbUser.update({ disabled: true })
+  const dbToken = await WebToken.findAll({
+    where: {
+      userId: token.id
+    }
+  })
+
+  try {
+    dbToken.forEach(async (token) => {
+      await token.destroy({ force: true })
+    });
+  } catch (error) {
+    return response.status(500).json({ error: "Server failure" });
+  }
+
   response.status(204).end();
 })
 

@@ -1,6 +1,8 @@
 const morgan = require('morgan')
-const { Blog, User, UserReadings } = require('../models')
+const { Blog, User, UserReadings, WebToken } = require('../models')
 const logger = require('./logger')
+const jwt = require('jsonwebtoken');
+const { SECRET } = require('./config');
 
 morgan.token('contents', function (req) {
   return JSON.stringify(req.body)
@@ -25,6 +27,10 @@ const errorHandler = (error, request, response, next) => {
     return response.status(401).json({
       error: 'invalid token'
     })
+  } else if (error.name === 'TokenExpiredError') {
+    return response.status(401).json({
+      error: 'token expired'
+    })
   }
 
   logger.error(error.message)
@@ -37,6 +43,44 @@ const tokenExtractor = (request, response, next) => {
   if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
     request.token = authorization.substring(7)
   }
+  next()
+}
+
+const checkToken = async (request, response, next) => {
+  if (!request.token)
+    return response.status(401).json({ error: 'token missing or invalid' })
+
+  const authorizationToken = request.token;
+  const dbToken = await WebToken.findOne({
+    where: {
+      token: authorizationToken
+    }
+  })
+
+  if (!dbToken)
+    return response.status(401).json({ error: 'token missing or invalid' })
+
+
+  const user = await User.findByPk(dbToken.userId);
+  try {
+    if (!user || user.disabled) {
+      await dbToken.destroy({ force: true })
+      const error = { name: "JsonWebTokenError" }
+      next(error)
+    }
+  } catch (error) {
+    next(error)
+  }
+
+  try {
+    const decoded = jwt.verify(authorizationToken, SECRET);
+    request.token = decoded;
+
+  } catch (error) {
+    await dbToken.destroy({ force: true })
+    next(error);
+  }
+
   next()
 }
 
@@ -55,11 +99,20 @@ async function blogFinder(request, response, next) {
 async function userFinder(request, response, next) {
 
   try {
-    const where = {  };
+    const where = {};
 
     if (request.query.read) {
       where.read = (request.query.read === 'true') ? true : false
     }
+
+    const includeDisabledWhere = {
+      username: request.params.id,
+    }
+
+    if (request.query.read) {
+      includeDisabledWhere.disa = (request.query.read === 'true') ? true : false
+    }
+
 
     request.user = await User.findOne({
       where: {
@@ -103,6 +156,7 @@ module.exports = {
   unknownEndpoint,
   errorHandler,
   tokenExtractor,
+  checkToken,
   blogFinder,
   userFinder,
   readingListFinder

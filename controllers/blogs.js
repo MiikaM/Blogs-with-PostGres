@@ -1,9 +1,7 @@
 const express = require('express');
 const blogsRouter = express.Router()
 const { Blog, User } = require('../models');
-const { blogFinder } = require('../utils/middleware');
-const { SECRET } = require('../utils/config')
-const jwt = require('jsonwebtoken');
+const { blogFinder, checkToken } = require('../utils/middleware');
 const { Op } = require('sequelize');
 
 
@@ -21,7 +19,7 @@ blogsRouter.get('/', async (request, response) => {
     where: {
       [Op.or]: [{
         title: {
-          [Op.substring]: request.query.search ? request.query.search : ""  
+          [Op.substring]: request.query.search ? request.query.search : ""
         }
       },
       {
@@ -35,15 +33,12 @@ blogsRouter.get('/', async (request, response) => {
 })
 
 
-blogsRouter.post('/', async (request, response, next) => {
-  const body = request.body
+blogsRouter.post('/', checkToken, async (request, response, next) => {
+  const body = request.body;
+  const token = request.token;
 
-  const decodedToken = jwt.verify(request.token, SECRET)
-  if (!request.token || !decodedToken.id) {
-    return response.status(401).json({ error: 'token missing or invalid' })
-  }
   try {
-    const user = await User.findByPk(decodedToken.id)
+    const user = await User.findByPk(token.id)
 
     const blog = await Blog.create({ ...body, likes: 0, userId: user.id });
     response.status(201).json(blog.toJSON())
@@ -61,7 +56,7 @@ singleBlogRouter.get('/', async (request, response) => {
   response.json(dbBlog.toJSON())
 })
 
-singleBlogRouter.put('/', async (request, response, next) => {
+singleBlogRouter.put('/', checkToken, async (request, response, next) => {
   const body = request.body
   const dbBlog = request.blog;
   try {
@@ -73,15 +68,11 @@ singleBlogRouter.put('/', async (request, response, next) => {
   }
 })
 
-singleBlogRouter.delete('/', async (request, response) => {
+singleBlogRouter.delete('/', checkToken, async (request, response) => {
   const dbBlog = request.blog;
+  const token = request.token;
 
-  const decodedToken = jwt.verify(request.token, SECRET)
-  if (!request.token || !decodedToken.id) {
-    return response.status(401).json({ error: 'token missing or invalid' })
-  }
-
-  const user = await User.findByPk(decodedToken.id);
+  const user = await User.findByPk(token.id);
 
   if (dbBlog.user) {
     if (!(dbBlog.userId === user.id)) {
