@@ -10,11 +10,18 @@ const migrationConf = {
   context: sequelize.getQueryInterface(), logger: console,
 }
 const runMigrations = async () => {
-  const migrator = new Umzug(migrationConf)
-  const migrations = await migrator.up()
-  console.log('Migrations up to date', {
-    files: migrations.map((mig) => mig.name),
-  })
+  try {
+    const migrator = new Umzug(migrationConf)
+    const migrations = await migrator.up()
+    console.log('Migrations up to date', {
+      files: migrations.map((mig) => mig.name),
+    })
+  } catch (error) {
+    console.log('Migration failed');
+    console.error({ error });
+    return process.exit(1)
+  }
+
 }
 
 const connectToDatabase = async () => {
@@ -35,4 +42,4 @@ const rollbackMigration = async () => {
   const migrator = new Umzug(migrationConf)
   await migrator.down()
 }
-module.exports = { connectToDatabase, sequelize, rollbackMigration }
+module.exports = { connectToDatabase, sequelize, rollbackMigration, runMigrations }

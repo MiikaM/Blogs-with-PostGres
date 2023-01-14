@@ -15,7 +15,8 @@ Blog.init(
     },
     title: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: false,
+     
     },
     author: {
       type: DataTypes.TEXT,
@@ -26,6 +27,20 @@ Blog.init(
     },
     likes: {
       type: DataTypes.INTEGER,
+    },
+    year: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        max: {
+          args: parseInt(new Date().getFullYear()),
+          msg: "The creation year cannot be larger than the current year."
+        },
+        min: {
+          args: 1991,
+          msg: "The creation year cannot be smaller than 1991."
+        },
+      }
     }
   },
   {

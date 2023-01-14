@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "test": "cross-env NODE_ENV=test jest --verbose --runInBand",
     "start:test": "cross-env NODE_ENV=test node index.js",
-    "migration:down": "node utils/rollback.js"
+    "migration:down": "node utils/rollback.js",
+    "migration:up": "node utils/migrate.js"
   },
   "author": "Miika Mikkonen",
   "license": "ISC",
